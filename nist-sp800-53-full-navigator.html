@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIST SP 800-53 Rev. 5 Complete Control Navigator</title>
+  <style>
+    :root {
+      --bg: #090e17;
+      --surface: #131d2e;
+      --card: #1c2a42;
+      --border: #293d5e;
+      --accent: #10b981;
+      --accent-alt: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      padding: 0.85rem 1.25rem;
+      background: #05080e;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .brand p { font-size: 0.75rem; color: var(--text-muted); }
+    .header-tools { display: flex; align-items: center; gap: 0.6rem; }
+    input[type="text"] {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      width: 220px;
+    }
+    input[type="text"]:focus { outline: 1px solid var(--accent); }
+    .btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--border); color: #fff; }
+    .main { display: flex; flex: 1; overflow: hidden; }
+    .sidebar {
+      width: 380px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .family-scroller {
+      padding: 0.5rem;
+      background: #0d1522;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 0.35rem;
+      overflow-x: auto;
+    }
+    .fam-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .fam-pill.active { background: var(--accent); color: #062817; border-color: var(--accent); }
+    .control-list { flex: 1; overflow-y: auto; }
+    .control-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #19263c;
+      cursor: pointer;
+    }
+    .control-item:hover { background: #18253b; }
+    .control-item.selected {
+      background: #1e3250;
+      border-left: 4px solid var(--accent);
+    }
+    .item-header { display: flex; justify-content: space-between; margin-bottom: 0.2rem; }
+    .item-id { font-weight: 700; color: var(--accent); font-size: 0.85rem; }
+    .item-fam { font-size: 0.65rem; padding: 0.1rem 0.35rem; background: var(--card); border-radius: 3px; color: #cbd5e1; }
+    .item-title { font-size: 0.8rem; color: #e2e8f0; }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .hero-meta { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .hero-card h2 { font-size: 1.35rem; }
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .panel-full { grid-column: span 2; }
+    .panel-header {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+    }
+    .panel-body { font-size: 0.875rem; line-height: 1.6; color: #cbd5e1; }
+    .check-row {
+      display: flex;
+      gap: 0.65rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #283955;
+    }
+    .check-row:last-child { border-bottom: none; }
+    .check-row input { margin-top: 0.25rem; }
+    .check-row label { font-size: 0.82rem; color: #e2e8f0; cursor: pointer; }
+    .method-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>NIST SP 800-53 Rev. 5 Master Catalog Navigator</h1>
+      <p>Self-Contained Offline Compliance Engine &bull; All 20 Control Families</p>
+    </div>
+    <div class="header-tools">
+      <input type="text" id="searchInput" placeholder="Search ID or keyword (e.g. AC-2, MFA, zero trust)..." />
+      <input type="file" id="oscalFile" accept=".json" style="display:none" onchange="importOscalJson(event)" />
+      <button class="btn" onclick="document.getElementById('oscalFile').click()">Load Official OSCAL JSON</button>
+      <button class="btn" onclick="exportChecklist()">Export Progress</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="family-scroller" id="familyBar"></div>
+      <div class="control-list" id="controlList"></div>
+    </div>
+    <main class="content">
+      <div class="hero-card" id="heroCard"></div>
+      <div class="panel panel-full">
+        <div class="panel-header">
+          <span>Control Definition & Baseline Requirement</span>
+        </div>
+        <div class="panel-body" id="defPanel"></div>
+      </div>
+      <div class="panel-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <span>Remediation & Technical Implementation</span>
+          </div>
+          <div class="panel-body" id="remedPanel"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span>NIST SP 800-53A Audit Procedures</span>
+          </div>
+          <div class="panel-body" id="testPanel"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // All 20 Official NIST SP 800-53 Rev. 5 Families & Master Index
+    const NIST_FAMILIES = {
+      "AC": "Access Control",
+      "AT": "Awareness and Training",
+      "AU": "Audit and Accountability",
+      "CA": "Assessment, Authorization, and Monitoring",
+      "CM": "Configuration Management",
+      "CP": "Contingency Planning",
+      "IA": "Identification and Authentication",
+      "IR": "Incident Response",
+      "MA": "Maintenance",
+      "MP": "Media Protection",
+      "PE": "Physical and Environmental Protection",
+      "PL": "Planning",
+      "PM": "Program Management",
+      "PS": "Personnel Security",
+      "PT": "Personally Identifiable Information Processing and Transparency",
+      "RA": "Risk Assessment",
+      "SA": "System and Services Acquisition",
+      "SC": "System and Communications Protection",
+      "SI": "System and Information Integrity",
+      "SR": "Supply Chain Risk Management"
+    };
+
+    // Built-in catalog covering all 20 families
+    const defaultCatalog = [
+      // AC - Access Control
+      { id: "AC-1", title: "Policy and Procedures", family: "AC", def: "Develop, document, and disseminate access control policy and procedures that address purpose, scope, roles, responsibilities, management commitment, and compliance.", remed: "Draft comprehensive Access Control Policy covering logical and physical access, approved by CISO. Review annually and publish to internal portal.", tests: ["EXAMINE: Documented access control policy and annual review timestamps.", "INTERVIEW: Security leadership and system owners.", "TEST: Verify centralized accessibility of policy to all authorized personnel."] },
+      { id: "AC-2", title: "Account Management", family: "AC", def: "Manage information system accounts: specify authorized user types, group/role membership, establish conditions for access, and require approvals for all requests.", remed: "Automate identity lifecycle provisioning via SCIM/SSO connected to HRIS. Mandate approval workflows for role assignment and enforce deactivation within 24 hours of separation.", tests: ["EXAMINE: Account management procedures and access request approval tickets.", "INTERVIEW: Identity administrators and HR personnel.", "TEST: Test automated offboarding workflow to verify directory suspension occurs within specified SLA."] },
+      { id: "AC-3", title: "Access Enforcement", family: "AC", def: "Enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.", remed: "Configure mandatory access controls (MAC) or role-based access controls (RBAC). Restrict file system ACLs and database tables using least privilege principles.", tests: ["EXAMINE: System access control lists (ACLs) and RBAC role definition matrices.", "INTERVIEW: Database and server administrators.", "TEST: Attempt unauthorized access to restricted directories using standard non-privileged test credentials."] },
+      { id: "AC-6", title: "Least Privilege", family: "AC", def: "Employ the principle of least privilege, allowing only authorized accesses for users (and processes acting on behalf of users) which are necessary to accomplish assigned tasks.", remed: "Remove local administrator rights from all standard endpoints. Deploy Privileged Access Management (PAM) with just-in-time (JIT) access elevation and time-boxed checkouts.", tests: ["EXAMINE: PAM configuration settings and role assignment registries.", "INTERVIEW: System engineers and privileged users.", "TEST: Verify endpoints block execution of administrative operations without PAM credential elevation."] },
+      { id: "AC-17", title: "Remote Access", family: "AC", def: "Establish and document usage restrictions, configuration/connection requirements, and implementation guidance for each type of remote access allowed.", remed: "Enforce Zero Trust Network Access (ZTNA) or TLS/IPsec VPN requiring device posture validation (EDR active, disk encrypted) and hardware-token MFA.", tests: ["EXAMINE: Remote access policy and perimeter gateway configurations.", "INTERVIEW: Network security team and remote workers.", "TEST: Attempt remote authentication from non-compliant/unmanaged endpoint to confirm connection refusal."] },
+
+      // AT - Awareness and Training
+      { id: "AT-2", title: "Security Awareness Training", family: "AT", def: "Provide basic security awareness training to information system users as part of initial training for new users and periodically thereafter.", remed: "Deploy interactive LMS security training covering social engineering, credential hygiene, and incident reporting. Mandate completion within 30 days of hire and annually thereafter.", tests: ["EXAMINE: Security training curriculum and learning management system completion logs.", "INTERVIEW: Training coordinators and newly hired personnel.", "TEST: Sample training records across 20 random personnel to ensure 100% completion before granting access."] },
+      { id: "AT-3", title: "Role-Based Training", family: "AT", def: "Provide role-based security training to personnel with significant security responsibilities before authorizing access to the system or performing assigned duties.", remed: "Mandate OWASP secure coding training for software engineers and advanced incident handling training for SOC analysts and incident responders.", tests: ["EXAMINE: Role-specific training syllabi and development team completion metrics.", "INTERVIEW: Application developers and systems administrators.", "TEST: Verify system administrators completed specialized training prior to being granted domain admin rights."] },
+
+      // AU - Audit and Accountability
+      { id: "AU-2", title: "Event Logging", family: "AU", def: "Identify the types of events that the system is capable of logging in support of the audit function, and coordinate logging with other organizational entities.", remed: "Configure audit policies to log successful/failed authentications, privilege escalations, file integrity changes, network traffic drops, and administrative modifications.", tests: ["EXAMINE: Documented list of auditable events and active OS audit configuration policies.", "INTERVIEW: SOC lead analysts and system engineers.", "TEST: Generate an audited event (e.g., failed logon attempt) and confirm log record creation in local and central log collectors."] },
+      { id: "AU-6", title: "Audit Record Review, Analysis, and Reporting", family: "AU", def: "Review and analyze information system audit records for indications of unusual or suspicious activity and report findings to designated personnel.", remed: "Forward all logs to an enterprise SIEM. Implement automated correlation rules, UEBA for anomalous logins, and daily alerts for security operations teams.", tests: ["EXAMINE: SIEM alert correlation rules and weekly review sign-offs.", "INTERVIEW: Security operations analysts.", "TEST: Inject simulated malicious telemetry (e.g., password spray) and verify real-time alert generation in SIEM."] },
+      { id: "AU-9", title: "Protection of Audit Information", family: "AU", def: "Protect audit information and audit tools from unauthorized access, modification, and deletion.", remed: "Write logs to write-once-read-many (WORM) or immutable cloud storage buckets. Strip write and delete permissions from all accounts including administrators.", tests: ["EXAMINE: Access control policies on central log repositories and S3 Object Lock settings.", "INTERVIEW: Cloud storage engineers and system auditors.", "TEST: Attempt deletion or tampering of historical log entries using administrative credentials."] },
+
+      // CA - Assessment, Authorization, and Monitoring
+      { id: "CA-2", title: "Control Assessments", family: "CA", def: "Assess the controls in the information system and its environment of operation to determine the extent to which the controls are implemented correctly and operating as intended.", remed: "Establish an independent annual control assessment schedule. Utilize automated assessment tools paired with independent third-party assessors to evaluate compliance.", tests: ["EXAMINE: Security Assessment Report (SAR) and control assessment plans.", "INTERVIEW: Independent assessors and CISO.", "TEST: Sample 10 controls evaluated in SAR to confirm findings match documented testing evidence."] },
+      { id: "CA-7", title: "Continuous Monitoring", family: "CA", def: "Develop a system-level continuous monitoring strategy and implement continuous monitoring in accordance with the organization-level continuous monitoring strategy.", remed: "Deploy automated vulnerability scanning, configuration drift monitors, automated compliance dashboards, and continuous security metrics reporting.", tests: ["EXAMINE: Continuous Monitoring Strategy document and ongoing dashboard metrics.", "INTERVIEW: System owners and cybersecurity compliance staff.", "TEST: Review historical automated compliance reports to ensure continuous visibility over previous 12 months."] },
+
+      // CM - Configuration Management
+      { id: "CM-2", title: "Baseline Configuration", family: "CM", def: "Develop, document, and maintain under configuration control, a current baseline configuration of the information system.", remed: "Implement CIS Benchmarks or DISA STIGs as hardened golden images. Automate image deployment and configuration enforcement via Terraform/Ansible.", tests: ["EXAMINE: Documented baseline configuration standards and golden image repository.", "INTERVIEW: Systems engineering leads and cloud architects.", "TEST: Scan live production instances against CIS benchmarks and check compliance percentage (target: >= 95%)."] },
+      { id: "CM-8", title: "Information System Component Inventory", family: "CM", def: "Develop and document an inventory of information system components that accurately reflects the system, is maintained using automated tools, and is available for review.", remed: "Deploy automated asset discovery across network ranges and cloud accounts. Integrate agents with enterprise CMDB to update asset records in real time.", tests: ["EXAMINE: Hardware and software inventory lists and CMDB reconciliation procedures.", "INTERVIEW: Configuration management team and network administrators.", "TEST: Reconcile active IP addresses from a live network scan against the official CMDB inventory."] },
+
+      // CP - Contingency Planning
+      { id: "CP-2", title: "Contingency Plan", family: "CP", def: "Develop a contingency plan for the information system that addresses system restoration without compromising security, and defines recovery objectives.", remed: "Document Business Continuity (BCP) and Disaster Recovery (DR) plans defining RTO and RPO objectives. Distribute securely to alternate operating locations.", tests: ["EXAMINE: Information System Contingency Plan (ISCP) and business impact analysis (BIA).", "INTERVIEW: Contingency planning coordinator and mission owners.", "TEST: Verify key personnel have access to out-of-band copies of the contingency plan during network outage."] },
+      { id: "CP-9", title: "Information System Backup", family: "CP", def: "Conduct backups of user-level information, system-level information, and security-related documentation; protect confidentiality, integrity, and availability of backups.", remed: "Implement 3-2-1 backup architecture with daily automated snapshots, offsite replication, and air-gapped immutable storage. Conduct monthly test restores.", tests: ["EXAMINE: Backup schedule, configuration scripts, and encryption settings.", "INTERVIEW: Backup operators and database administrators.", "TEST: Execute a test restore of a sample production database from immutable backup to verify integrity."] },
+
+      // IA - Identification and Authentication
+      { id: "IA-2", title: "Identification and Authentication (Organizational Users)", family: "IA", def: "Uniquely identify and authenticate organizational users (or processes acting on behalf of organizational users).", remed: "Enforce Multi-Factor Authentication (FIDO2 WebAuthn or PIV smart cards) across all network, SaaS, and server logins. Deprecate legacy SMS/voice OTP authentication.", tests: ["EXAMINE: Identity provider configuration and conditional access rules.", "INTERVIEW: Identity architects and end users.", "TEST: Attempt login to corporate resource without hardware MFA to verify access is denied."] },
+      { id: "IA-5", title: "Authenticator Management", family: "IA", def: "Manage information system authenticators including passwords, tokens, certificates, and smart cards.", remed: "Implement enterprise password manager, enforce minimum 16-character passphrases for non-MFA service accounts, and automate certificate renewal via ACME/Vault.", tests: ["EXAMINE: Password and authenticator management policy and directory password settings.", "INTERVIEW: PKI administrators and security engineers.", "TEST: Inspect Active Directory or IdP settings to confirm enforcement of passphrase length and complexity."] },
+
+      // IR - Incident Response
+      { id: "IR-4", title: "Incident Handling", family: "IR", def: "Implement an incident handling capability for security incidents that includes preparation, detection and analysis, containment, eradication, and recovery.", remed: "Establish Computer Security Incident Response Team (CSIRT) and develop runbooks for ransomware, unauthorized data access, and supply chain compromise.", tests: ["EXAMINE: Incident response plan, runbooks, and ticketing records.", "INTERVIEW: CSIRT leads and on-call responders.", "TEST: Conduct annual tabletop exercise simulating a critical ransomware attack and review response actions."] },
+      { id: "IR-6", title: "Incident Reporting", family: "IR", def: "Report information security incidents to designated authorities and organizational leadership within specified timeframes.", remed: "Define strict notification SLA (e.g., 1 hour internal escalation, 72 hours regulatory/CISA notification). Build automated notification webhooks into ticketing systems.", tests: ["EXAMINE: Incident reporting procedures and legal escalation matrices.", "INTERVIEW: Legal counsel, privacy officer, and incident commanders.", "TEST: Review audit log of past incidents to verify timely notification to external authorities."] },
+
+      // MA - Maintenance
+      { id: "MA-2", title: "Controlled Maintenance", family: "MA", def: "Schedule, perform, document, and review records of maintenance and repairs on information system components in accordance with manufacturer or vendor specifications.", remed: "Maintain maintenance logs in IT service ticketing system. Require authorization for maintenance activities and inspect diagnostic equipment prior to connection.", tests: ["EXAMINE: Maintenance logs and authorized maintenance vendor agreements.", "INTERVIEW: Facilities and hardware maintenance technicians.", "TEST: Review past maintenance tickets to confirm advance approval by system custodians."] },
+
+      // MP - Media Protection
+      { id: "MP-6", title: "Media Sanitization", family: "MP", def: "Sanitize system media, both digital and non-digital, prior to disposal, release out of organizational control, or release for reuse.", remed: "Sanitize magnetic and solid-state drives using NIST SP 800-88 cryptographic erase or physical degaussing/shredding. Secure Certificates of Destruction.", tests: ["EXAMINE: Media sanitization policy and signed vendor destruction certificates.", "INTERVIEW: Asset retirement technicians.", "TEST: Inspect decommissioned drives awaiting disposal to confirm physical destruction or cryptographic wipe."] },
+
+      // PE - Physical and Environmental Protection
+      { id: "PE-3", title: "Physical Access Control", family: "PE", def: "Enforce physical access authorizations for all access points to the facility where the information system resides.", remed: "Deploy electronic badge access controls, visitor escorts, and biometric access to server rooms. Review card access logs monthly.", tests: ["EXAMINE: Physical access authorization lists and visitor logs.", "INTERVIEW: Physical security guards and facility managers.", "TEST: Attempt badge access to server room using unauthorized employee card to confirm access denial."] },
+
+      // PL - Planning
+      { id: "PL-2", title: "System Security and Privacy Plan", family: "PL", def: "Develop, document, and update a system security and privacy plan that describes the system boundary, operational environment, and implemented controls.", remed: "Draft formal System Security Plan (SSP) detailing system boundaries, interconnection agreements, and control mappings. Update annually or on major architectural changes.", tests: ["EXAMINE: System Security Plan (SSP) document and authorization boundary diagrams.", "INTERVIEW: Authorizing official (AO) and system owner.", "TEST: Verify controls described in the SSP match active operational system settings."] },
+
+      // PM - Program Management
+      { id: "PM-9", title: "Risk Management Strategy", family: "PM", def: "Develop a comprehensive strategy to manage information security and privacy risk across the organization.", remed: "Formulate Enterprise Risk Management (ERM) framework defining risk tolerance, acceptable thresholds, and recurring risk register reviews.", tests: ["EXAMINE: Documented risk management strategy and risk tolerance statements.", "INTERVIEW: Chief Risk Officer (CRO) and CISO.", "TEST: Review minutes of executive risk council to confirm regular review of enterprise risk registers."] },
+
+      // PS - Personnel Security
+      { id: "PS-3", title: "Personnel Screening", family: "PS", def: "Screen individuals prior to authorizing access to the system and periodically thereafter.", remed: "Conduct criminal, financial, and credential background investigations commensurate with position sensitivity before issuing system access.", tests: ["EXAMINE: Personnel screening policy and HR background check completion records.", "INTERVIEW: Human resources director and hiring managers.", "TEST: Sample 20 onboarded employees to verify background check clearance prior to active directory provisioning."] },
+
+      // PT - PII Processing and Transparency
+      { id: "PT-2", title: "Authority to Process PII", family: "PT", def: "Determine and document the legal authority that permits the processing of PII across systems.", remed: "Maintain Record of Processing Activities (ROPA) and legal justification matrices for all collected consumer and employee personal data.", tests: ["EXAMINE: Privacy impact assessments (PIAs) and documented legal authorities.", "INTERVIEW: Chief Privacy Officer and legal counsel.", "TEST: Review database schemas storing PII to confirm mapped legal processing authority exists."] },
+
+      // RA - Risk Assessment
+      { id: "RA-5", title: "Vulnerability Monitoring and Scanning", family: "RA", def: "Monitor for vulnerabilities in the system and hosted applications; scan for vulnerabilities periodically and when new vulnerabilities are identified.", remed: "Run weekly authenticated network vulnerability scans and container scans. Enforce remediation SLAs (Critical: 7 days, High: 30 days).", tests: ["EXAMINE: Vulnerability scanning policy, scanner configuration, and remediation tickets.", "INTERVIEW: Vulnerability management engineers.", "TEST: Sample closed critical CVE tickets to confirm resolution timestamps met policy SLAs."] },
+
+      // SA - System and Services Acquisition
+      { id: "SA-4", title: "Acquisition Process", family: "SA", def: "Include security and privacy requirements, descriptions of functional properties, and design specifications in acquisition contracts.", remed: "Insert mandatory Security Schedules, right-to-audit clauses, and SLA commitments into all procurement contracts and RFPs.", tests: ["EXAMINE: Procurement contracts, vendor questionnaires, and security schedules.", "INTERVIEW: Procurement directors and vendor risk managers.", "TEST: Inspect recent vendor contracts to confirm required cybersecurity and data breach clauses are present."] },
+
+      // SC - System and Communications Protection
+      { id: "SC-7", title: "Boundary Protection", family: "SC", def: "Monitor and control communications at external boundaries of the system and key internal boundaries.", remed: "Deploy Next-Generation Firewalls (NGFW) with deep packet inspection. Segment subnets using VLANs, deny all inbound traffic by default, and isolate DMZ.", tests: ["EXAMINE: Firewall rulesets, network architecture diagrams, and DMZ configurations.", "INTERVIEW: Network security engineers.", "TEST: Perform external port scan to verify all non-essential ports are filtered/closed at boundary."] },
+      { id: "SC-13", title: "Cryptographic Protection", family: "SC", def: "Implement cryptographic modules in accordance with applicable federal laws, policies, and FIPS standards.", remed: "Enforce FIPS 140-2/3 validated cryptographic algorithms (AES-256, SHA-384, TLS 1.3). Store keys in hardware security modules (HSM) or cloud KMS.", tests: ["EXAMINE: Cryptographic policy and FIPS module validation certificates.", "INTERVIEW: PKI custodians and application architects.", "TEST: Scan internal and external endpoints with SSL/TLS analyzer to ensure deprecation of non-FIPS ciphers."] },
+
+      // SI - System and Information Integrity
+      { id: "SI-2", title: "Flaw Remediation", family: "SI", def: "Identify, report, and correct information system flaws (patches); test software updates before installation; install security-relevant updates within defined timeframes.", remed: "Automate patch management pipelines. Test security updates in staging environments and apply critical operating system and application patches within 14 days.", tests: ["EXAMINE: Patch management procedures and monthly deployment schedules.", "INTERVIEW: Systems operations and desktop engineering leads.", "TEST: Query live endpoints for missing critical patches released more than 30 days prior."] },
+      { id: "SI-4", title: "Information System Monitoring", family: "SI", def: "Monitor the system to detect attacks and indicators of potential compromise, and unauthorized connections to the system.", remed: "Deploy EDR agents across 100% of endpoints. Ingest NetFlow, DNS, and authentication events into SIEM for 24/7 automated anomaly detection.", tests: ["EXAMINE: Network monitoring architecture and SIEM detection rule catalogs.", "INTERVIEW: SOC manager and monitoring analysts.", "TEST: Execute an authorized benign detection test (e.g., Atomic Red Team) and verify detection alert in SOC queue."] },
+
+      // SR - Supply Chain Risk Management
+      { id: "SR-3", title: "Supply Chain Controls and Processes", family: "SR", def: "Establish a supply chain risk management plan; assess and mitigate risks associated with suppliers and system components.", remed: "Maintain Software Bill of Materials (SBOM) for all custom applications. Vet third-party hardware vendors to prevent counterfeit and compromised components.", tests: ["EXAMINE: Supply Chain Risk Management Plan (SCRM) and SBOM repository.", "INTERVIEW: Supply chain security officer and procurement staff.", "TEST: Review an incoming software release against open-source vulnerability databases to verify zero critical CVEs in dependencies."] }
+    ];
+
+    let catalog = [...defaultCatalog];
+    let activeFamily = "ALL";
+    let selectedId = "AC-2";
+
+    // Initialize from LocalStorage if OSCAL was previously loaded
+    if (localStorage.getItem("nist_oscal_catalog")) {
+      try {
+        catalog = JSON.parse(localStorage.getItem("nist_oscal_catalog"));
+      } catch (e) {
+        console.error("Failed parsing cached catalog", e);
+      }
+    }
+
+    function renderFamilyBar() {
+      const bar = document.getElementById("familyBar");
+      bar.innerHTML = `<button class="fam-pill ${activeFamily === 'ALL' ? 'active' : ''}" onclick="selectFamily('ALL')">ALL</button>`;
+      
+      Object.keys(NIST_FAMILIES).forEach(fam => {
+        const count = catalog.filter(c => c.family === fam).length;
+        const btn = document.createElement("button");
+        btn.className = `fam-pill ${activeFamily === fam ? 'active' : ''}`;
+        btn.innerText = `${fam} (${count})`;
+        btn.onclick = () => selectFamily(fam);
+        bar.appendChild(btn);
+      });
+    }
+
+    function selectFamily(fam) {
+      activeFamily = fam;
+      renderFamilyBar();
+      renderControlList();
+      const filtered = getFiltered();
+      if (filtered.length > 0 && !filtered.find(c => c.id === selectedId)) {
+        selectControl(filtered[0].id);
+      }
+    }
+
+    function getFiltered() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      return catalog.filter(c => {
+        const matchesFam = activeFamily === "ALL" || c.family === activeFamily;
+        const matchesQuery = c.id.toLowerCase().includes(q) || c.title.toLowerCase().includes(q) || c.def.toLowerCase().includes(q);
+        return matchesFam && matchesQuery;
+      });
+    }
+
+    function renderControlList() {
+      const container = document.getElementById("controlList");
+      container.innerHTML = "";
+      const list = getFiltered();
+
+      list.forEach(c => {
+        const div = document.createElement("div");
+        div.className = `control-item ${c.id === selectedId ? 'selected' : ''}`;
+        div.onclick = () => selectControl(c.id);
+        div.innerHTML = `
+          <div class="item-header">
+            <span class="item-id">${c.id}</span>
+            <span class="item-fam">${c.family}</span>
+          </div>
+          <div class="item-title">${c.title}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function selectControl(id) {
+      selectedId = id;
+      const ctrl = catalog.find(c => c.id === id);
+      if (!ctrl) return;
+
+      document.getElementById("heroCard").innerHTML = `
+        <div class="hero-meta">NIST SP 800-53 Rev. 5 &bull; Family: ${NIST_FAMILIES[ctrl.family] || ctrl.family}</div>
+        <h2>${ctrl.id} &ndash; ${ctrl.title}</h2>
+      `;
+      document.getElementById("defPanel").innerText = ctrl.def;
+      document.getElementById("remedPanel").innerText = ctrl.remed;
+
+      const testContainer = document.getElementById("testPanel");
+      testContainer.innerHTML = "";
+      ctrl.tests.forEach((t, idx) => {
+        const parts = t.split(":");
+        const tag = parts.length > 1 ? parts[0] : "TEST";
+        const content = parts.length > 1 ? parts.slice(1).join(":") : t;
+        
+        const row = document.createElement("div");
+        row.className = "check-row";
+        row.innerHTML = `
+          <input type="checkbox" id="chk_${ctrl.id}_${idx}">
+          <label for="chk_${ctrl.id}_${idx}">
+            <span class="method-badge">${tag}</span> ${content}
+          </label>
+        `;
+        testContainer.appendChild(row);
+      });
+
+      renderControlList();
+    }
+
+    // OSCAL JSON Importer (Loads the complete official NIST 800-53 catalog into offline storage)
+    function importOscalJson(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const json = JSON.parse(e.target.result);
+          const controls = [];
+          
+          // Traverse OSCAL catalog structure
+          if (json.catalog && json.catalog.groups) {
+            json.catalog.groups.forEach(grp => {
+              const fam = grp.id.toUpperCase();
+              if (grp.controls) {
+                grp.controls.forEach(ctrl => {
+                  const id = ctrl.id.toUpperCase();
+                  const title = ctrl.title || "";
+                  let def = "";
+                  if (ctrl.parts) {
+                    const statement = ctrl.parts.find(p => p.name === "statement");
+                    if (statement && statement.prose) def = statement.prose;
+                  }
+                  
+                  // Procedural synthesis of remediation and 800-53A tests based on control family context
+                  const remed = `Implement policy and technical mechanisms for ${title}. Ensure configuration is hardened, automated monitoring is enabled, and standard operating procedures (SOP) are updated.`;
+                  const tests = [
+                    `EXAMINE: Security plan, ${title} implementation evidence, and configuration baseline records.`,
+                    `INTERVIEW: System custodians and engineers responsible for ${fam} enforcement.`,
+                    `TEST: Execute operational test on live system components to verify enforcement of ${id}.`
+                  ];
+
+                  controls.push({ id, title, family: fam, def: def || title, remed, tests });
+                });
+              }
+            });
+          }
+
+          if (controls.length > 0) {
+            catalog = controls;
+            localStorage.setItem("nist_oscal_catalog", JSON.stringify(catalog));
+            alert(`Successfully imported ${controls.length} NIST controls from OSCAL JSON into local storage!`);
+            renderFamilyBar();
+            selectControl(catalog[0].id);
+          } else {
+            alert("No valid NIST controls detected in the selected OSCAL format.");
+          }
+        } catch (err) {
+          alert("Error parsing OSCAL JSON file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportChecklist() {
+      const checked = [];
+      document.querySelectorAll("input[type='checkbox']:checked").forEach(cb => {
+        checked.push(cb.id);
+      });
+      const blob = new Blob([JSON.stringify({ date: new Date().toISOString(), completed: checked }, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "nist-800-53-audit-progress.json";
+      a.click();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", () => {
+      renderControlList();
+      const filtered = getFiltered();
+      if (filtered.length > 0) selectControl(filtered[0].id);
+    });
+
+    // Startup
+    renderFamilyBar();
+    selectControl("AC-2");
+  </script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISO/IEC 27001:2022 Annex A Navigator (Offline Edition)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --pill-org: #3b82f6;
+      --pill-people: #10b981;
+      --pill-phys: #f59e0b;
+      --pill-tech: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      padding: 1rem 1.5rem;
+      background: #090d16;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .header-title h1 { font-size: 1.25rem; font-weight: 700; color: #fff; }
+    .header-title p { font-size: 0.8rem; color: var(--text-muted); }
+    .controls-search {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    input[type="text"] {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 0.5rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      width: 240px;
+    }
+    input[type="text"]:focus { outline: 1px solid var(--accent); }
+    .filters {
+      display: flex;
+      gap: 0.35rem;
+    }
+    .filter-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      color: #04101e;
+      border-color: var(--accent);
+    }
+    .main-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 380px;
+      border-right: 1px solid var(--card-border);
+      overflow-y: auto;
+      background: #131d2e;
+    }
+    .control-item {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #1e293b;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .control-item:hover { background: #1a273e; }
+    .control-item.selected {
+      background: #1e2e4a;
+      border-left: 4px solid var(--accent);
+    }
+    .control-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+    .control-id { font-weight: 700; font-size: 0.85rem; color: var(--accent); }
+    .badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .badge-org { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-people { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-phys { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-tech { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.4); }
+    .control-name { font-size: 0.85rem; font-weight: 500; color: #e2e8f0; }
+
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 1.5rem;
+      gap: 1.25rem;
+    }
+    .content-header {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .content-header h2 { font-size: 1.35rem; margin-bottom: 0.35rem; }
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .panel-full { grid-column: span 2; }
+    .panel-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .panel-body { font-size: 0.875rem; line-height: 1.6; color: #cbd5e1; }
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #283548;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-item input { margin-top: 0.25rem; cursor: pointer; }
+    .checklist-item label { font-size: 0.85rem; color: #e2e8f0; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>ISO/IEC 27001:2022 Control Inspector</h1>
+      <p>Self-contained offline tool &bull; 93 Annex A Controls</p>
+    </div>
+    <div class="controls-search">
+      <input type="text" id="searchInput" placeholder="Search controls (e.g., A.5.15, crypto, screen)..." />
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterCategory('All')">All (93)</button>
+        <button class="filter-btn" onclick="filterCategory('Organizational')">Org (37)</button>
+        <button class="filter-btn" onclick="filterCategory('People')">People (8)</button>
+        <button class="filter-btn" onclick="filterCategory('Physical')">Phys (14)</button>
+        <button class="filter-btn" onclick="filterCategory('Technological')">Tech (34)</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div class="sidebar" id="controlList"></div>
+    <main class="content-area" id="detailArea">
+      <div class="content-header" id="headerDetail"></div>
+      <div class="panel panel-full">
+        <div class="panel-title">Definition & Protection Objective</div>
+        <div class="panel-body" id="defContent"></div>
+      </div>
+      <div class="content-grid">
+        <div class="panel">
+          <div class="panel-title">Remediation & Hardening Steps</div>
+          <div class="panel-body" id="remedContent"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Implementation Testing & Audit Procedure</div>
+          <div class="panel-body" id="testContent"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Full ISO/IEC 27001:2022 Annex A dataset (93 controls)
+    const rawData = [
+      // Organizational (A.5.1 - A.5.37)
+      ["A.5.1", "Policies for information security", "Organizational", "Policies for information security and topic-specific policies shall be defined, approved by management, published, communicated to and acknowledged by relevant personnel and interested parties, and reviewed at planned intervals.", "Draft topic-specific policies (access control, cryptography, remote working). Secure leadership approval. Publish centrally via ISMS portal and mandate employee sign-off.", ["Verify documented policies exist and are signed off by management.", "Sample acknowledgment records across different departments.", "Confirm annual policy review logs or triggers on significant organizational change."]],
+      ["A.5.2", "Information security roles and responsibilities", "Organizational", "Information security roles and responsibilities shall be defined and allocated according to the organization needs.", "Define clear security roles (CISO, Data Custodians, System Administrators). Formalize responsibilities in job descriptions, RACI matrices, and committee charters.", ["Inspect RACI matrix and organizational security charts.", "Verify allocation of operational vs governance responsibilities.", "Confirm segregation of duties between system approval and execution."]],
+      ["A.5.3", "Segregation of duties", "Organizational", "Conflicting duties and conflicting areas of responsibility shall be segregated.", "Separate requestor and approver roles in accounting and infrastructure deployments. Implement two-person rule for critical production releases and financial transfers.", ["Review user permissions in core systems for toxic role combinations.", "Test audit trail on production deployments to confirm separation.", "Verify that developers cannot approve their own pull requests to master branch."]],
+      ["A.5.4", "Management responsibilities", "Organizational", "Management shall require all personnel to apply information security in accordance with the established information security policy.", "Embed security adherence into annual performance reviews, executive dashboards, and department KPI targets.", ["Inspect executive meeting minutes for ISMS progress reviews.", "Verify departmental compliance reporting mechanisms.", "Confirm management enforcement actions on policy exceptions."]],
+      ["A.5.5", "Contact with authorities", "Organizational", "The organization shall establish and maintain contact with relevant authorities.", "Maintain an updated register of regulatory bodies, local law enforcement, cyber defense agencies (e.g., CISA, FBI InfraGard, CERT), and data protection commissions.", ["Review regulatory authority contact directory for currency.", "Test incident escalation runbook for timely external reporting.", "Check records of previous interactions or notifications to regulators."]],
+      ["A.5.6", "Contact with special interest groups", "Organizational", "The organization shall establish and maintain contact with special interest groups or other specialist security forums.", "Enroll in ISACs (Information Sharing and Analysis Centers), cybersecurity forums, and professional chapters (e.g., ISC2, ISACA).", ["Check memberships and active participation records in industry forums.", "Review intelligence gathered and how it feeds risk management.", "Verify subscription to vulnerability advisory feeds."]],
+      ["A.5.7", "Threat intelligence", "Organizational", "Information relating to information security threats shall be collected and analyzed to produce threat intelligence.", "Ingest structured threat feeds (STIX/TAXII, commercial intelligence). Integrate threat feeds with SIEM/EDR to identify emerging adversary tactics and IoCs.", ["Review documented threat intelligence analysis procedure.", "Verify integration of threat indicators into detection pipelines.", "Sample threat intelligence briefings delivered to technical teams."]],
+      ["A.5.8", "Information security in project management", "Organizational", "Information security shall be integrated into project management.", "Incorporate security milestones, threat modeling, and privacy assessments into the Project Management Lifecycle (PMLC/SDLC).", ["Review sample project initiation documents for security requirements.", "Verify security sign-off prior to milestone approvals.", "Check project risk registers for identified security treatment plans."]],
+      ["A.5.9", "Inventory of information and other associated assets", "Organizational", "An inventory of information and other associated assets, including owners, shall be developed and maintained.", "Deploy automated asset discovery across on-prem and cloud environments. Assign designated owners to hardware, software, repositories, and sensitive data sets.", ["Cross-reference CMDB / cloud inventory against active IP scans.", "Inspect sample asset entries to ensure an identifiable asset owner exists.", "Verify asset inventory reconciliation cycles (at least quarterly)."]],
+      ["A.5.10", "Acceptable use of information and other associated assets", "Organizational", "Rules for the acceptable use of information and other associated assets shall be identified, documented and implemented.", "Establish Acceptable Use Policy (AUP) covering email, cloud apps, personal devices (BYOD), and generative AI tools. Obtain employee acknowledgment.", ["Inspect signed AUP agreements across randomly sampled employees.", "Check web filtering logs for enforcement of restricted site access.", "Review mobile device management (MDM) enrollment policies."]],
+      ["A.5.11", "Return of assets", "Organizational", "Personnel and other interested parties as appropriate shall return all the organization's assets in their possession upon change or termination.", "Automate asset return checklists in HR offboarding workflows. Implement hardware recovery tracking or secure remote wipe procedures.", ["Inspect HR offboarding checklist archives for signed asset returns.", "Verify disabled remote access triggers on returned hardware.", "Sample termination dates vs device check-in / remote wipe logs."]],
+      ["A.5.12", "Classification of information", "Organizational", "Information shall be classified in accordance with the information security needs of the organization based on confidentiality, integrity, availability and relevant interested party requirements.", "Define data taxonomy (Public, Internal, Confidential, Restricted). Configure automatic labeling in productivity tools and document classification policies.", ["Inspect classification scheme documentation and guidelines.", "Sample data repositories to ensure proper labels/tags are applied.", "Verify DLP policy triggers corresponding to classification tiers."]],
+      ["A.5.13", "Labelling of information", "Organizational", "An appropriate set of procedures for information labelling shall be developed and implemented in accordance with the information classification scheme.", "Deploy automated file metadata tagging and visual watermarking for sensitive files, emails, and generated exports.", ["Inspect sample document outputs to verify classification footers/headers.", "Verify DLP regex patterns correspond to standard metadata labels.", "Audit electronic document templates for pre-configured classification headers."]],
+      ["A.5.14", "Information transfer", "Organizational", "Information transfer rules, procedures, or agreements shall be in place for all types of transfer facilities within the organization and between the organization and other parties.", "Enforce encrypted channels (SFTP, TLS 1.3, encrypted email) for transfers. Prohibit transfer of sensitive data over consumer messaging or unapproved file shares.", ["Inspect configurations of file transfer services for mandatory encryption.", "Review contracts/NDAs for data transfer clauses with external parties.", "Sample gateway inspection logs for unencrypted data exfiltration."]],
+      ["A.5.15", "Access control", "Organizational", "Rules to control physical and logical access to information and other associated assets shall be established and implemented based on business and security requirements.", "Establish Role-Based Access Control (RBAC), enforce least privilege, implement automated joiner/mover/leaver workflows, and conduct periodic entitlement reviews.", ["Inspect formal access control policy documentation.", "Sample 20 user access profiles to verify alignment with job roles.", "Review quarterly access re-certification sign-off logs from managers."]],
+      ["A.5.16", "Identity management", "Organizational", "The full life cycle of identities shall be managed.", "Deploy centralized Identity and Access Management (IAM). Implement unique user accounts, prohibit shared credentials, and enforce identity verification before provisioning.", ["Verify integration of cloud/on-prem apps with central IAM/SSO.", "Test offboarding deactivation SLA (verify immediate identity suspension).", "Inspect logs for inactive account cleanup (>90 days without login)."]],
+      ["A.5.17", "Authentication information", "Organizational", "Allocation and management of authentication information shall be controlled by a management process, including advising personnel on proper handling.", "Enforce strict password complexity/passphrase standards, deploy password managers, restrict hardcoded credentials, and educate users on credential hygiene.", ["Inspect password policy settings in Active Directory / Identity Provider.", "Audit code repositories for hardcoded credentials/secrets via automated scanning.", "Verify secure delivery mechanism for initial temporary passwords."]],
+      ["A.5.18", "Access rights", "Organizational", "Access rights to information and other associated assets shall be provisioned, reviewed, modified and removed in accordance with the organization's topic-specific policy.", "Enforce ticket-driven access requests with explicit manager and data owner approval. Implement just-in-time (JIT) access for administrative tasks.", ["Review access approval tickets for appropriate authorization signatures.", "Sample modified employee accounts to ensure old privileges were stripped.", "Examine service account permissions to ensure least privilege."]],
+      ["A.5.19", "Information security in supplier relationships", "Organizational", "Processes and procedures shall be defined and implemented to manage the information security risks associated with the use of supplier's products or services.", "Implement vendor risk assessment questionnaires (SIG/CAIQ), evaluate third-party SOC 2 / ISO 27001 reports, and rank vendors by risk tier.", ["Review third-party risk management register and tiering criteria.", "Inspect completed risk assessments for critical cloud and SaaS vendors.", "Verify vendor re-assessment frequency based on risk rating."]],
+      ["A.5.20", "Addressing information security within supplier agreements", "Organizational", "Relevant information security requirements shall be established and agreed with each supplier based on the type of supplier relationship.", "Incorporate mandatory Security Schedules, Data Protection Agreements (DPAs), right-to-audit clauses, and security incident notification windows into vendor contracts.", ["Sample vendor contracts for required security commitments and DPAs.", "Verify incident notification timeframes (e.g., 24-72 hours) in contracts.", "Inspect confirmation of vendor compliance with encryption requirements."]],
+      ["A.5.21", "Managing information security in the ICT supply chain", "Organizational", "Processes and procedures shall be defined and implemented to manage the information security risks associated with the ICT products and services supply chain.", "Assess hardware/software provenance, inspect Software Bills of Materials (SBOM), and vet upstream libraries/components against vulnerability databases.", ["Review SBOMs for deployed production software stacks.", "Verify hardware procurement occurs solely through authorized distributor channels.", "Sample third-party dependency updates against vulnerability alerts."]],
+      ["A.5.22", "Monitoring, review and change management of supplier services", "Organizational", "The organization shall regularly monitor, review, evaluate and manage change in supplier information security practices and service delivery.", "Track vendor SLA compliance, review annual SOC 2 Type II reports, monitor vendor security posture via continuous threat monitoring tools, and log major vendor architectural changes.", ["Inspect evidence of annual reviews for critical vendor audit reports.", "Verify resolution tracking for vendor-reported security vulnerabilities.", "Review change log for significant changes made to vendor service integrations."]],
+      ["A.5.23", "Information security for use of cloud services", "Organizational", "Processes for the acquisition, use, management and exit from cloud services shall be established in accordance with the organization's information security requirements.", "Formulate Cloud Governance standards, enforce Cloud Security Posture Management (CSPM), map shared responsibility models, and draft cloud exit/transition strategies.", ["Review Cloud Security Baseline configurations against CIS Benchmarks.", "Verify CSPM alert remediation metrics and policy compliance.", "Inspect documented cloud exit and data export procedures."]],
+      ["A.5.24", "Information security incident management planning and preparation", "Organizational", "The organization shall plan and prepare for managing information security incidents by defining, establishing and communicating information security incident management processes.", "Create an Incident Response Plan (IRP), establish an Incident Response Team (CSIRT), define severity matrices, and schedule tabletop exercises.", ["Inspect documented Incident Response Plan and on-call escalation schedules.", "Verify execution and post-mortem notes of annual incident tabletop exercises.", "Confirm availability of external incident response retainer retainers."]],
+      ["A.5.25", "Assessment and decision on information security events", "Organizational", "The organization shall assess information security events and decide if they are to be categorized as information security incidents.", "Establish triage playbooks for security analysts, define event-to-incident escalation criteria, and integrate automated SOAR triage workflows.", ["Review ticketing system for triage categorization consistency.", "Verify escalation times against documented SLA targets.", "Inspect false-positive handling and tuning documentation."]],
+      ["A.5.26", "Response to information security incidents", "Organizational", "Information security incidents shall be responded to in accordance with the documented procedures.", "Execute containment, eradication, and recovery playbooks. Preserve digital forensics evidence and log all response actions taken.", ["Sample past incident tickets for adherence to containment playbooks.", "Verify forensic chain-of-custody forms and evidence storage integrity.", "Confirm communication logs to executive and legal stakeholders."]],
+      ["A.5.27", "Learning from information security incidents", "Organizational", "Knowledge gained from information security incidents shall be used to strengthen and improve the information security controls.", "Conduct mandatory Post-Incident Reviews (PIR) / Root Cause Analysis (RCA) meetings. Track corrective action items to resolution.", ["Review PIR/RCA documents for closed critical incidents.", "Verify implementation status of remediation actions resulting from incidents.", "Check whether policy or technical rules were updated post-incident."]],
+      ["A.5.28", "Collection of evidence", "Organizational", "The organization shall define and implement procedures for the identification, collection, acquisition and preservation of evidence related to information security events.", "Equip forensics responders with write-blockers, memory capture tools, and secure cloud snapshot procedures following ISO/IEC 27037 standards.", ["Review forensic handling procedures for alignment with legal admissibility standards.", "Verify cryptographic hashing (SHA-256) of collected disk/memory images.", "Inspect access controls to secure forensic evidence vaults."]],
+      ["A.5.29", "Information security during disruption", "Organizational", "The organization shall plan how to maintain information security at an appropriate level during disruption.", "Integrate security requirements into Business Continuity Plans (BCP) and Disaster Recovery (DR) runbooks to ensure controls aren't relaxed during emergencies.", ["Review BCP/DR plans to confirm security mechanisms remain active during failover.", "Sample failover test logs to check access control enforcement in DR sites.", "Verify encryption key availability during alternate site recovery."]],
+      ["A.5.30", "ICT readiness for business continuity", "Organizational", "ICT readiness shall be planned, implemented, maintained and tested based on business continuity objectives and ICT continuity requirements.", "Define Recovery Time Objectives (RTO) and Recovery Point Objectives (RPO). Implement redundant architecture and test system restoration regularly.", ["Review documented RTO/RPO requirements approved by business owners.", "Verify full disaster recovery test results and failover drill records.", "Confirm multi-region redundancy configurations for mission-critical apps."]],
+      ["A.5.31", "Legal, statutory, regulatory and contractual requirements", "Organizational", "Legal, statutory, regulatory and contractual requirements and the organization's approach to meet these requirements shall be identified, documented and kept up to date.", "Maintain a Compliance Obligations Matrix (GDPR, HIPAA, PCI-DSS, local laws) with mapped internal controls and designated compliance owners.", ["Review the legal/regulatory obligations register for currency.", "Confirm documented mapping of statutory obligations to internal policies.", "Inspect legal counsel or compliance team sign-offs on regulatory updates."]],
+      ["A.5.32", "Intellectual property rights", "Organizational", "The organization shall implement appropriate procedures to protect intellectual property rights.", "Track software licenses to prevent copyright infringement. Implement digital rights management (DRM) and trademark/patent protection protocols.", ["Review software license tracking dashboards and compliance reports.", "Verify adherence to open-source software license restrictions in SDLC.", "Inspect employment agreements for IP assignment and protection clauses."]],
+      ["A.5.33", "Protection of records", "Organizational", "Records shall be protected from loss, destruction, falsification, unauthorized access and unauthorized release.", "Define a Records Retention and Disposal Schedule. Enforce WORM (Write Once, Read Many) or immutable storage for critical audit logs and compliance records.", ["Inspect configuration of immutable/versioned storage for critical records.", "Review records retention schedule and verify automated archival routines.", "Sample test record retrieval from archives to verify integrity."]],
+      ["A.5.34", "Privacy and protection of PII", "Organizational", "The organization shall identify and meet the requirements regarding the preservation of privacy and protection of PII according to applicable laws and regulations.", "Conduct Data Protection Impact Assessments (DPIAs), maintain Records of Processing Activities (ROPA), and implement consent management mechanisms.", ["Review completed DPIAs for high-risk data processing projects.", "Verify implementation of data subject rights (DSR) workflows (deletion, access).", "Inspect privacy notices and consent collection banners."]],
+      ["A.5.35", "Independent review of information security", "Organizational", "The organization's approach to managing information security and its implementation shall be reviewed independently at planned intervals.", "Schedule annual third-party external audits, penetration testing, and independent internal audit engagements reporting to the audit committee.", ["Review independent internal audit reports and management responses.", "Inspect external certification audit findings and remediation plans.", "Verify independence and qualifications of the review team."]],
+      ["A.5.36", "Compliance with policies and standards for information security", "Organizational", "Managers shall regularly review the compliance of information processing and procedures within their area of responsibility with the appropriate security policies.", "Deploy automated compliance scanners, conduct periodic managerial self-assessments, and review configuration compliance dashboards monthly.", ["Sample departmental compliance inspection checklists completed by managers.", "Verify automated policy compliance scoring across endpoints and servers.", "Track non-compliance remediation tasks to completion."]],
+      ["A.5.37", "Documented operating procedures", "Organizational", "Operating procedures for information processing facilities shall be documented and made available to all users who need them.", "Maintain Standard Operating Procedures (SOPs) for routine IT operations, backups, patching, system provisioning, and batch scheduling in a central knowledge base.", ["Review SOP repository to ensure documents are version-controlled and reviewed.", "Verify operational staff have read and acknowledge applicable procedures.", "Compare observed operational practices against documented procedures."]],
+
+      // People (A.6.1 - A.6.8)
+      ["A.6.1", "Screening", "People", "Background verification checks on all candidates to become personnel shall be carried out prior to joining the organization and on an ongoing basis.", "Perform background checks (criminal history, employment history, credential verification) proportional to the sensitivity of the role.", ["Sample 20 personnel files to verify completed background checks prior to start date.", "Verify policy for recurring checks on elevated/privileged roles.", "Inspect vendor agreements for contractor background screening verification."]],
+      ["A.6.2", "Terms and conditions of employment", "People", "The employment contractual agreements shall state the personnel's and the organization's responsibilities for information security.", "Include security obligations, acceptable use terms, confidentiality clauses, and post-termination duties in employment contracts.", ["Inspect standard employment contract templates for required security clauses.", "Verify signed contracts for newly onboarded employees and contractors.", "Confirm explicit clauses detailing consequences of security policy violations."]],
+      ["A.6.3", "Information security awareness, education and training", "People", "Personnel of the organization and relevant interested parties shall receive appropriate information security awareness, education and training and regular updates.", "Mandate onboarding security training, quarterly refresher modules, role-specific secure coding training for devs, and regular phishing simulations.", ["Verify 100% completion rates for annual mandatory security training.", "Inspect phishing simulation failure metrics and subsequent remediation training.", "Review specialized training curricula for developers and system administrators."]],
+      ["A.6.4", "Disciplinary process", "People", "A disciplinary process shall be formalized and communicated to take action against personnel and other relevant interested parties who have committed an information security policy violation.", "Formulate a progressive disciplinary policy with HR outlining penalties for intentional, negligent, or repeated security breaches.", ["Review documented disciplinary procedure in employee handbook.", "Inspect HR records to ensure uniform application of penalties for breaches.", "Verify escalation pathways for severe or malicious security infractions."]],
+      ["A.6.5", "Responsibilities after termination or change of employment", "People", "Information security responsibilities and duties that remain valid after termination or change of employment shall be defined, enforced and communicated.", "Reiterate ongoing non-disclosure and intellectual property obligations during exit interviews. Require signed post-employment acknowledgment.", ["Inspect signed exit interview acknowledgment forms containing NDA reminders.", "Verify documented notification to external clients/partners regarding role termination.", "Check legal enforcement terms regarding trade secrets in employee contracts."]],
+      ["A.6.6", "Confidentiality or non-disclosure agreements", "People", "Confidentiality or non-disclosure agreements reflecting the organization's needs for the protection of information shall be identified, documented, regularly reviewed and signed.", "Require enforceable NDAs for all staff, contractors, and third-party partners before sharing proprietary or confidential information.", ["Sample signed NDA repository for newly hired staff and vendors.", "Review NDA clauses to ensure coverage of proprietary source code and PII.", "Verify process for updating NDAs when business relationships expand."]],
+      ["A.6.7", "Remote working", "People", "Security measures shall be implemented when personnel are working remotely to protect information accessed, processed or stored outside the organization's premises.", "Mandate company-managed endpoints with full disk encryption, Always-On VPN/ZTNA, disable split tunneling, and issue physical privacy screens.", ["Verify endpoint encryption and MDM compliance for remote laptops.", "Inspect VPN/ZTNA connection logs for MFA enforcement on remote logins.", "Review remote work security policy and employee acknowledgment records."]],
+      ["A.6.8", "Information security event reporting", "People", "The organization shall provide a mechanism for personnel to report observed or suspected information security events through appropriate channels in a timely manner.", "Deploy a 'Report Phishing' button in email clients, publicize security hotline/Slack channels, and train employees on how to spot and report anomalies.", ["Verify functionality of internal phishing and incident reporting tools.", "Sample reported event tickets to ensure prompt triage by SOC.", "Review metrics on employee-reported security incidents over the past 12 months."]],
+
+      // Physical (A.7.1 - A.7.14)
+      ["A.7.1", "Physical security perimeters", "Physical", "Security perimeters shall be defined and used to protect areas that contain information and other associated assets.", "Install physical access barriers (fences, badge readers, security turnstiles, mantraps) around headquarters and server room perimeters.", ["Inspect physical floor plans and perimeter boundary demarcations.", "Conduct physical walkthrough to verify intact barriers and uncompromised perimeters.", "Verify perimeter intrusion detection and alarm operational status."]],
+      ["A.7.2", "Physical entry", "Physical", "Secure areas shall be protected by appropriate entry controls and access points.", "Enforce electronic keycard access, biometric authentication for data centers, visitor badging, and escort policies for non-employees.", ["Review electronic badge entry access logs for server rooms.", "Inspect visitor sign-in registers and verify non-disclosure acknowledgments.", "Test tailgating prevention mechanisms at primary entry points."]],
+      ["A.7.3", "Securing offices, rooms and facilities", "Physical", "Physical security for offices, rooms and facilities shall be designed and implemented.", "Install physical locks on critical wiring closets, lock vacant meeting rooms, and position workstations away from public view or street-level windows.", ["Perform physical walkthrough to inspect locking status of telecom closets.", "Verify that sensitive departments (HR, Finance) have restricted physical access.", "Confirm that ground-floor windows are reinforced or tinted."]],
+      ["A.7.4", "Physical security monitoring", "Physical", "Premises shall be continuously monitored for unauthorized physical access.", "Deploy 24/7 CCTV surveillance at entry/exit points and server rooms. Integrate motion sensors and physical alarm monitoring systems.", ["Inspect camera coverage across key entry points, server rooms, and exits.", "Verify CCTV video recording retention meets policy (e.g., minimum 30-90 days).", "Test physical alarm response procedures and central station monitoring."]],
+      ["A.7.5", "Protecting against physical and environmental threats", "Physical", "Protection against physical and environmental threats, such as natural disasters and other intentional or unintentional physical threats to infrastructure, shall be designed and implemented.", "Install environmental controls: FM-200/clean-agent fire suppression, water leak detection sensors, and lightning arrestors.", ["Review annual inspection certificates for fire suppression systems.", "Inspect placement and operational testing of water leak sensors in data centers.", "Verify physical risk assessments covering regional environmental hazards."]],
+      ["A.7.6", "Working in secure areas", "Physical", "Security measures for working in secure areas shall be designed and implemented.", "Enforce strict policies prohibiting cameras, smartphones, and recording devices inside secure development labs or data centers. Mandate buddy system where required.", ["Check physical signage posted outside designated secure zones.", "Inspect locker facilities for personal electronics outside restricted areas.", "Sample access logs to verify personnel authorized to enter secure areas."]],
+      ["A.7.7", "Clear desk and clear screen", "Physical", "Clear desk rules for papers and removable storage media and clear screen rules for information processing facilities shall be defined and appropriately applied.", "Enforce GPO/MDM auto-lock after 5 minutes of inactivity. Provide lockable filing cabinets and locked shredding bins.", ["Conduct unannounced after-hours walkthrough audits of office desks.", "Verify automated screen lock timeout configuration via active MDM profiles.", "Inspect availability and usage of locked paper shredding consoles."]],
+      ["A.7.8", "Equipment siting and protection", "Physical", "Equipment shall be sited and protected to reduce risks from environmental threats and hazards, and opportunities for unauthorized access.", "Position server racks in climate-controlled environments away from water pipes, external windows, and high foot-traffic corridors.", ["Inspect server room layout for isolation from water lines and HVAC condensation.", "Verify server rack enclosures are physically locked.", "Review HVAC temperature and humidity monitoring thresholds and logs."]],
+      ["A.7.9", "Security of assets off-premises", "Physical", "Off-site assets shall be protected.", "Enforce asset tracking, full disk encryption (BitLocker/FileVault), remote lock/wipe capabilities, and strict rules against leaving laptops in vehicles.", ["Verify 100% encryption compliance for mobile/off-premise computing assets.", "Review policy governing acceptable transport of hardware.", "Sample remote wipe command capability via MDM interface."]],
+      ["A.7.10", "Storage media", "Physical", "Storage media shall be managed through their life cycle of acquisition, use, transportation and disposal in accordance with the organization's classification scheme.", "Encrypt USB drives, sanitize decommissioned SSDs/HDDs using NIST SP 800-88 standards, and lock magnetic tapes in fireproof safes.", ["Inspect media sanitization logs and certificates of destruction.", "Review physical custody logs for tapes or drives transported offsite.", "Verify endpoint configuration blocking unauthorized USB flash media."]],
+      ["A.7.11", "Supporting utilities", "Physical", "Information processing facilities shall be protected from power failures and other disruptions caused by failures in supporting utilities.", "Install Uninterruptible Power Supplies (UPS) and backup diesel generators. Test generator load transfers periodically.", ["Review scheduled UPS battery load test results and maintenance logs.", "Verify diesel generator fuel capacity and semi-annual failover test reports.", "Inspect dual-feed power distribution units (PDUs) to critical server racks."]],
+      ["A.7.12", "Cabling security", "Physical", "Cables carrying power, data or supporting information services shall be protected from interception, interference or damage.", "Run network cabling through metal conduits, secure patch panels in locked racks, and physically separate power lines from data cables to eliminate crosstalk.", ["Inspect structured cabling trays and locked patch panel enclosures.", "Verify physical separation between high-voltage power lines and Cat6/Fiber runs.", "Ensure external telecommunication lines enter through secure, locked demarc rooms."]],
+      ["A.7.13", "Equipment maintenance", "Physical", "Equipment shall be correctly maintained to ensure its continued availability and integrity.", "Establish vendor service level agreements for critical hardware maintenance. Log all maintenance activities and inspect technician escorts.", ["Review scheduled hardware maintenance logs against manufacturer guidelines.", "Verify authorization and physical escort records for third-party maintenance engineers.", "Confirm critical diagnostic tools undergo security inspection before connection."]],
+      ["A.7.14", "Secure disposal or re-use of equipment", "Physical", "Items of equipment containing storage media shall be verified to ensure that any sensitive data and licensed software has been removed or securely overwritten prior to disposal or re-use.", "Degauss, shred, or cryptographically erase hard drives prior to recycling or resale. Obtain certified Certificates of Destruction.", ["Sample Certificates of Destruction from certified e-waste disposal vendors.", "Verify physical destruction or overwriting procedures match NIST SP 800-88 guidelines.", "Inspect asset retirement checkoff tickets in IT asset management inventory."]],
+
+      // Technological (A.8.1 - A.8.34)
+      ["A.8.1", "User endpoint devices", "Technological", "Information stored on, processed by or accessible via user endpoint devices shall be protected.", "Enroll all endpoints in MDM/EDR. Enforce full disk encryption, automated patching, local firewall rules, and restrict local administrative rights.", ["Verify EDR agent deployment across 100% of corporate workstations.", "Inspect endpoint compliance reports for full disk encryption (BitLocker/FileVault).", "Sample user accounts to ensure absence of unauthorized local admin privileges."]],
+      ["A.8.2", "Privileged access rights", "Technological", "The allocation and use of privileged access rights shall be restricted and managed.", "Deploy Privileged Access Management (PAM), require hardware token MFA for admin consoles, enforce credential check-out, and log session recordings.", ["Audit PAM tool configurations for session recording and credential vaulting.", "Verify zero administrative actions can be initiated without MFA.", "Review privileged role membership to ensure strictly limited assignment."]],
+      ["A.8.3", "Information access restriction", "Technological", "Access to information and other associated assets shall be restricted in accordance with the established topic-specific policy on access control.", "Implement dynamic access controls, granular database permissions, file system ACLs, and multi-tenant data segregation.", ["Test access boundaries between different department shares.", "Review database access grant logs for application service accounts.", "Verify multi-tenant logical segregation in custom-built applications."]],
+      ["A.8.4", "Access to source code", "Technological", "Read and write access to source code, development tools and software libraries shall be appropriately managed.", "Store code in centralized VCS (GitHub, GitLab), enforce branch protection rules, mandate peer reviews for pull requests, and restrict write access.", ["Inspect branch protection settings: require >= 1 review and passing CI checks.", "Verify source code access permissions match current developer rosters.", "Check audit logs for unauthorized repo cloning or external commits."]],
+      ["A.8.5", "Secure authentication", "Technological", "Secure authentication technologies and procedures shall be implemented based on information access restrictions and the topic-specific policy on access control.", "Enforce Multi-Factor Authentication (FIDO2, WebAuthn, Authenticator app), eliminate SMS MFA for high-risk systems, and deploy risk-based conditional access.", ["Inspect conditional access policies in Identity Provider requiring MFA.", "Verify deprecation of legacy authentication protocols (e.g., Basic Auth, POP3, IMAP).", "Test authentication failure lockout thresholds and rate-limiting."]],
+      ["A.8.6", "Capacity management", "Technological", "The use of resources shall be monitored and adjusted in line with current and expected capacity requirements.", "Implement auto-scaling groups, monitor CPU/RAM/disk consumption via monitoring tools (Datadog/Prometheus), and set threshold alerts at 80% usage.", ["Review system resource utilization alerts and capacity forecasting reports.", "Verify cloud auto-scaling policies under simulated load spikes.", "Inspect historical disk capacity growth trends and storage expansion logs."]],
+      ["A.8.7", "Protection against malware", "Technological", "Protection against malware shall be implemented and supported by appropriate user awareness.", "Deploy modern Next-Gen Antivirus (NGAV) and EDR with real-time heuristic scanning. Enable automated isolation of infected endpoints.", ["Review EDR dashboard to verify active real-time protection on all hosts.", "Test EDR alert generation with an EICAR test string or simulated beacon.", "Verify automatic virus definition and heuristic model update intervals."]],
+      ["A.8.8", "Management of technical vulnerabilities", "Technological", "Information about technical vulnerabilities of information systems in use shall be obtained, the organization's exposure to such vulnerabilities evaluated and appropriate measures taken.", "Execute weekly authenticated vulnerability scans, track CVEs via automated scanners, and enforce patching SLAs (e.g., Critical: 7 days, High: 30 days).", ["Inspect vulnerability scan reports across internal and external assets.", "Sample closed critical CVE tickets to confirm patching occurred within SLA.", "Verify exception documentation for unpatched legacy systems."]],
+      ["A.8.9", "Configuration management", "Technological", "Configurations, including security configurations, of hardware, software, services and networks shall be established, documented, implemented, monitored and reviewed.", "Harden systems using CIS Benchmarks. Manage configurations through Infrastructure-as-Code (Terraform, Ansible), and trigger automated drift alerts.", ["Compare production server settings against CIS hardened baseline images.", "Verify that direct production configuration edits are blocked in favor of IaC.", "Review configuration drift detection alerts over the preceding quarter."]],
+      ["A.8.10", "Information deletion", "Technological", "Information stored in information systems, devices or in any other storage media shall be deleted when no longer required.", "Configure automatic data lifecycle rules in cloud storage buckets, purge logs past retention limits, and provide secure deletion utilities for databases.", ["Verify lifecycle rule configurations on S3/blob storage for automated purging.", "Inspect database archival and purge script execution logs.", "Check verified execution of user account deletion requests under GDPR/CCPA."]],
+      ["A.8.11", "Data masking", "Technological", "Data masking shall be used in accordance with the organization's topic-specific policy on access control and other related topic-specific policies.", "Mask PII/financial data in production interfaces (e.g., showing only last 4 digits), and synthesize or pseudonymize datasets copied to staging/QA environments.", ["Inspect staging and QA databases to verify absence of raw production PII.", "Test web UI forms to verify masking of credit card numbers, SSNs, and passwords.", "Review cryptographic pseudomization key separation from masked data."]],
+      ["A.8.12", "Data leakage prevention", "Technological", "Data leakage prevention measures shall be applied to systems, networks and any other devices that process, store or transmit sensitive information.", "Deploy endpoint and network DLP agents. Block exfiltration of sensitive strings (regex for SSNs/credit cards) to personal USBs, webmail, and public cloud drives.", ["Test DLP policy triggers by simulating an outbound transmission of test synthetic PII.", "Inspect DLP alert consoles for unresolved exfiltration incidents.", "Verify endpoint DLP policy blocking unapproved cloud storage services."]],
+      ["A.8.13", "Information backup", "Technological", "Backup copies of information, software and other systems shall be maintained and regularly tested in accordance with the agreed topic-specific policy on backup.", "Implement 3-2-1 backup architecture (3 copies, 2 media types, 1 offsite/immutable). Enforce immutability to prevent ransomware tampering, and perform monthly restore tests.", ["Verify daily automated backup job success notifications.", "Inspect immutable/air-gapped configuration of backup repositories.", "Review results and timestamps of regular database restore exercises."]],
+      ["A.8.14", "Redundancy of information processing facilities", "Technological", "Information processing facilities shall be implemented with redundancy sufficient to meet availability requirements.", "Architect systems across multiple cloud Availability Zones (AZs) or redundant on-prem hardware clusters with automated load balancing and failover.", ["Review architectural diagrams for elimination of single points of failure (SPOF).", "Inspect automated failover health check thresholds on load balancers.", "Test failover by simulating node failure in a secondary AZ."]],
+      ["A.8.15", "Logging", "Technological", "Logs that record activities, exceptions, faults and other relevant events shall be produced, kept, protected and analyzed.", "Centralize system, authentication, application, and network logs in a SIEM. Retain logs for at least 365 days, and enforce immutable log storage permissions.", ["Verify active log forwarding from endpoints, firewalls, and cloud infrastructure to SIEM.", "Check log retention settings to confirm adherence to required storage duration.", "Inspect access controls preventing deletion or modification of logs by administrators."]],
+      ["A.8.16", "Monitoring activities", "Technological", "Networks, systems and applications shall be monitored for anomalous behavior and appropriate actions taken to evaluate potential information security incidents.", "Deploy SIEM/SOAR correlation rules, User and Entity Behavior Analytics (UEBA), and network anomaly detection. Ensure 24/7 alert monitoring.", ["Review active SIEM detection rules for coverage of common attack techniques.", "Verify alert notification escalation paths to on-call engineers.", "Sample recent security alert tickets to verify investigation within SLA."]],
+      ["A.8.17", "Clock synchronization", "Technological", "The clocks of information processing systems shall be synchronized to approved time sources.", "Configure Network Time Protocol (NTP) referencing reliable stratum-1 sources (e.g., pool.ntp.org or AWS Time Sync Service) across all domain controllers and servers.", ["Inspect NTP configuration profiles across servers and network appliances.", "Check system log timestamps to ensure temporal consistency within milliseconds.", "Verify alerts for clock drift exceeding predefined thresholds."]],
+      ["A.8.18", "Use of privileged utility programs", "Technological", "The use of utility programs that might be capable of overriding system and application controls shall be restricted and tightly controlled.", "Restrict execution of debugging tools, raw disk editors, packet injectors, and registry modifiers. Whitelist authorized tools and log execution.", ["Inspect application allowlisting/AppLocker rules for restricted utility software.", "Verify administrative justification workflows prior to launching low-level tools.", "Review execution audit logs for privileged system binaries."]],
+      ["A.8.19", "Installation of software on operational systems", "Technological", "Procedures and measures shall be implemented to securely manage software installation on operational systems.", "Remove end-user local administrator privileges. Distribute software solely via managed software catalogs (Intune, Jamf, SCCM), and prohibit arbitrary downloads.", ["Test non-admin account ability to install executable packages on standard machines.", "Inspect software catalog repository for approval records of packaged apps.", "Review automated inventory scans for unapproved third-party software."]],
+      ["A.8.20", "Networks security", "Technological", "Networks and network devices shall be secured, managed and controlled to protect information in systems and applications.", "Segment networks using VLANs and microsegmentation. Harden network switch/router configurations and disable insecure protocols (Telnet, HTTP, SNMPv1/v2).", ["Review network architecture diagrams illustrating DMZ and internal microsegmentation.", "Inspect router and firewall configuration files for hardened baseline adherence.", "Run network vulnerability scans looking for exposed legacy management interfaces."]],
+      ["A.8.21", "Security of network services", "Technological", "Security mechanisms, service levels and service requirements of network services shall be identified, implemented and monitored.", "Define explicit security SLAs for ISPs, cloud VPCs, and managed SD-WAN providers. Enforce encrypted tunnels (IPsec/TLS) for network connectivity.", ["Inspect vendor agreements for network service security commitments.", "Verify network monitoring metrics for VPN uptime, latency, and packet loss.", "Check configurations of managed firewalls and DNS security filters."]],
+      ["A.8.22", "Segregation of networks", "Technological", "Groups of information services, users and information systems shall be segregated on networks.", "Segregate corporate traffic, production workloads, IoT devices, guest Wi-Fi, and payment processing environments into distinct VLANs and VPC subnets.", ["Attempt cross-VLAN network pings/connections from guest Wi-Fi to corporate subnets.", "Inspect firewall access control lists (ACLs) separating development from production.", "Verify security group rules restricting traffic between disparate cloud tiers."]],
+      ["A.8.23", "Web filtering", "Technological", "Access to external websites shall be managed to reduce exposure to malicious content.", "Deploy Secure Web Gateways (SWG) or DNS-based filtering (Cisco Umbrella, Cloudflare Zero Trust) to block known phishing, malware, and unauthorized categories.", ["Attempt to browse to simulated malware/phishing domains to verify SWG block page.", "Inspect web proxy logs for categorized domain blockage statistics.", "Review exceptions policy and approval records for unblocking filtered URLs."]],
+      ["A.8.24", "Use of cryptography", "Technological", "Rules for the effective use of cryptography, including cryptographic key management, shall be defined and implemented.", "Enforce TLS 1.3 for data in transit and AES-256 for data at rest. Implement secure key management (KMS/HSM), key rotation, and deprecate weak ciphers (DES, SHA1).", ["Scan external endpoints with SSL/TLS analyzer to ensure deprecation of TLS 1.0/1.1.", "Inspect cloud storage bucket settings to verify default encryption with customer KMS.", "Review KMS key rotation policies and access policy grants."]],
+      ["A.8.25", "Secure development life cycle", "Technological", "Rules for the secure development of software and systems shall be established and applied.", "Implement DevSecOps practices: conduct threat modeling in design, run SAST/DAST in CI/CD pipelines, require mandatory code reviews, and track security bugs.", ["Review CI/CD pipeline configurations to verify automated SAST step execution.", "Inspect threat model documentation for recent major software releases.", "Verify security gates blocking pipeline progression on critical vulnerabilities."]],
+      ["A.8.26", "Application security requirements", "Technological", "Information security requirements shall be identified, specified and approved when developing or acquiring applications.", "Formulate security requirements (OWASP Top 10 mitigations, input sanitization, authentication flows) during application scoping and RFP preparation.", ["Review business requirements documents for explicit security criteria.", "Sample user story acceptance criteria for security and privacy specifications.", "Confirm security team approval prior to finalizing application purchase/build."]],
+      ["A.8.27", "Secure system architecture and engineering principles", "Technological", "Principles for engineering secure systems shall be established, documented, maintained and applied to any information system development activities.", "Adhere to Zero Trust principles, defense-in-depth, fail-safe defaults, and least privilege in system architectures.", ["Review architectural design review meeting minutes and approval artifacts.", "Verify defense-in-depth layers documented in enterprise architecture blueprints.", "Inspect evidence showing default-deny firewall and authorization implementations."]],
+      ["A.8.28", "Secure coding", "Technological", "Secure coding principles shall be applied to software development.", "Provide developers with secure coding guidelines. Enforce parameterization against SQLi, contextual encoding against XSS, and ban unsafe memory functions.", ["Review developer secure coding standards documentation.", "Sample static code analysis logs to verify automated detection of code flaws.", "Check peer review records to confirm security aspects are verified before merge."]],
+      ["A.8.29", "Security testing in development and acceptance", "Technological", "Security testing processes shall be defined and implemented in the development life cycle.", "Perform automated unit security tests, dynamic application security testing (DAST), API security fuzzing, and third-party penetration tests prior to major releases.", ["Inspect recent penetration test reports on pre-production software builds.", "Verify automated DAST run outputs in the deployment pipeline.", "Confirm user acceptance testing (UAT) sign-off documents include security verification."]],
+      ["A.8.30", "Outsourced development", "Technological", "The organization shall direct, monitor and review the activities related to outsourced system development.", "Mandate third-party development contractors adhere to internal secure coding standards, undergo code security audits, and provide vulnerability warranties.", ["Inspect contractual terms requiring external vendors to deliver secure code.", "Review results of independent code reviews performed on outsourced deliverables.", "Verify vendor resolution of identified security defects prior to final invoice payment."]],
+      ["A.8.31", "Separation of development, test and production environments", "Technological", "Development, testing and production environments shall be separated and secured.", "Maintain dedicated, isolated cloud accounts or infrastructure for Dev, Test, and Prod. Ensure developers do not have write access to production environments.", ["Check IAM permissions to confirm developers have no administrative access in production.", "Verify separate network VPCs and subnets exist for development and production.", "Ensure production databases are not replicated into development environments."]],
+      ["A.8.32", "Change management", "Technological", "Changes to information processing facilities and information systems shall be subject to change management procedures.", "Implement Change Advisory Board (CAB) review, formal change tickets, emergency change procedures, and mandatory rollback plans.", ["Sample 25 change tickets to verify completed risk assessments and rollback plans.", "Verify CAB approval signatures before changes are deployed to production.", "Check emergency change logs to verify retrospective documentation within 24h."]],
+      ["A.8.33", "Test information", "Technological", "Test information shall be appropriately selected, secured and managed.", "Use synthetic or anonymized dummy data for development and testing. Prohibit copying raw customer production data to test environments without masking.", ["Review procedures for generating synthetic test databases.", "Inspect test database tables to ensure absence of actual customer PII.", "Verify authorization logs if production data is ever temporarily used for testing."]],
+      ["A.8.34", "Protection of information systems during audit testing", "Technological", "Audit tests and other assurance activities involving the assessment of operational systems shall be planned and agreed between the tester and appropriate management.", "Schedule penetration tests and vulnerability scans during off-peak maintenance windows. Define rules of engagement and monitor production system stability.", ["Inspect approved Rules of Engagement (RoE) documents prior to pentesting.", "Verify notifications sent to SOC/IT teams prior to scheduled intrusive tests.", "Check monitoring logs during audit windows to ensure no service degradation occurred."]]
+    ];
+
+    let currentList = [...rawData];
+    let selectedId = "A.5.15";
+
+    function renderList() {
+      const listEl = document.getElementById("controlList");
+      listEl.innerHTML = "";
+      currentList.forEach(item => {
+        const [id, name, cat] = item;
+        const div = document.createElement("div");
+        div.className = `control-item ${id === selectedId ? 'selected' : ''}`;
+        let badgeClass = "badge-org";
+        if (cat === "People") badgeClass = "badge-people";
+        if (cat === "Physical") badgeClass = "badge-phys";
+        if (cat === "Technological") badgeClass = "badge-tech";
+
+        div.innerHTML = `
+          <div class="control-item-header">
+            <span class="control-id">${id}</span>
+            <span class="badge ${badgeClass}">${cat.substring(0, 4)}</span>
+          </div>
+          <div class="control-name">${name}</div>
+        `;
+        div.onclick = () => selectControl(id);
+        listEl.appendChild(div);
+      });
+    }
+
+    function selectControl(id) {
+      selectedId = id;
+      renderList();
+      const ctrl = rawData.find(c => c[0] === id);
+      if (!ctrl) return;
+
+      const [cId, name, cat, def, remed, tests] = ctrl;
+      document.getElementById("headerDetail").innerHTML = `
+        <span style="font-size: 0.8rem; color: var(--accent); font-weight: bold; text-transform: uppercase;">${cat} Control &bull; ISO/IEC 27001:2022</span>
+        <h2>${cId} &ndash; ${name}</h2>
+      `;
+      document.getElementById("defContent").innerText = def;
+      document.getElementById("remedContent").innerText = remed;
+
+      const testContainer = document.getElementById("testContent");
+      testContainer.innerHTML = "";
+      tests.forEach((t, idx) => {
+        const item = document.createElement("div");
+        item.className = "checklist-item";
+        item.innerHTML = `
+          <input type="checkbox" id="chk_${cId}_${idx}">
+          <label for="chk_${cId}_${idx}">${t}</label>
+        `;
+        testContainer.appendChild(item);
+      });
+    }
+
+    function filterCategory(cat) {
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.innerText.toLowerCase().startsWith(cat.toLowerCase().substring(0, 3)));
+      });
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const activeBtn = document.querySelector(".filter-btn.active").innerText.toLowerCase();
+      
+      currentList = rawData.filter(([id, name, cat, def]) => {
+        const matchesQuery = id.toLowerCase().includes(q) || name.toLowerCase().includes(q) || def.toLowerCase().includes(q);
+        let matchesCat = true;
+        if (activeBtn.startsWith("org")) matchesCat = cat === "Organizational";
+        if (activeBtn.startsWith("people")) matchesCat = cat === "People";
+        if (activeBtn.startsWith("phys")) matchesCat = cat === "Physical";
+        if (activeBtn.startsWith("tech")) matchesCat = cat === "Technological";
+        return matchesQuery && matchesCat;
+      });
+
+      renderList();
+      if (currentList.length > 0 && !currentList.find(c => c[0] === selectedId)) {
+        selectControl(currentList[0][0]);
+      }
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+
+    // Initial render
+    renderList();
+    selectControl("A.5.15");
+  </script>
+</body>
+</html>

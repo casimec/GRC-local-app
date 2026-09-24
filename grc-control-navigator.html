@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Control Navigator: ISO 27001 & NIST SP 800-53</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel-bg: #1e293b;
+      --panel-border: #334155;
+      --sidebar-bg: #0f172a;
+      --accent-iso: #38bdf8;
+      --accent-nist: #34d399;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      padding: 0.85rem 1.25rem;
+      background: #060913;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; color: #fff; }
+    .brand p { font-size: 0.75rem; color: var(--text-muted); }
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .framework-toggle {
+      display: flex;
+      background: #1e293b;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .framework-btn {
+      padding: 0.45rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .framework-btn.active.iso { background: var(--accent-iso); color: #082f49; }
+    .framework-btn.active.nist { background: var(--accent-nist); color: #064e3b; }
+    input[type="text"] {
+      background: #1e293b;
+      border: 1px solid var(--panel-border);
+      color: #fff;
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      width: 220px;
+    }
+    input[type="text"]:focus { outline: 1px solid var(--accent-iso); }
+    .main-body { display: flex; flex: 1; overflow: hidden; }
+    .sidebar {
+      width: 360px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--panel-border);
+      display: flex;
+      flex-direction: column;
+    }
+    .filter-bar {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+      background: #090e1a;
+    }
+    .pill {
+      background: #1e293b;
+      border: 1px solid var(--panel-border);
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pill.active { background: #334155; color: #fff; border-color: #64748b; }
+    .control-list { flex: 1; overflow-y: auto; }
+    .control-row {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #1a2436;
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+    .control-row:hover { background: #162032; }
+    .control-row.selected {
+      background: #1a2a44;
+      border-left: 4px solid var(--accent-iso);
+    }
+    .control-row.selected.nist { border-left-color: var(--accent-nist); }
+    .row-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; }
+    .row-id { font-weight: 700; font-size: 0.8rem; color: #38bdf8; }
+    .row-id.nist { color: #34d399; }
+    .badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+      background: #334155;
+      color: #94a3b8;
+    }
+    .row-name { font-size: 0.8rem; color: #cbd5e1; line-height: 1.3; }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .header-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+    }
+    .header-card .fw-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+      display: inline-block;
+    }
+    .header-card h2 { font-size: 1.25rem; }
+    .grid-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .panel-full { grid-column: span 2; }
+    .panel-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .panel-title.iso { color: var(--accent-iso); }
+    .panel-title.nist { color: var(--accent-nist); }
+    .panel-body { font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; }
+    .check-item {
+      display: flex;
+      gap: 0.6rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #293548;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-item input { margin-top: 0.2rem; cursor: pointer; }
+    .check-item label { font-size: 0.82rem; color: #e2e8f0; cursor: pointer; }
+    .method-tag {
+      font-size: 0.65rem;
+      font-weight: bold;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+      background: #0f172a;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>Unified ISMS & Security Controls Inspector</h1>
+      <p>Self-contained offline application &bull; ISO/IEC 27001:2022 & NIST SP 800-53 Rev. 5</p>
+    </div>
+    <div class="header-actions">
+      <div class="framework-toggle">
+        <button class="framework-btn active iso" onclick="switchFramework('ISO')">ISO 27001 (93)</button>
+        <button class="framework-btn nist" onclick="switchFramework('NIST')">NIST 800-53</button>
+      </div>
+      <input type="text" id="searchInput" placeholder="Search controls (e.g., AC-2, A.5.15, crypto)..." />
+    </div>
+  </header>
+
+  <div class="main-body">
+    <div class="sidebar">
+      <div class="filter-bar" id="filterBar"></div>
+      <div class="control-list" id="controlList"></div>
+    </div>
+    <main class="content-area">
+      <div class="header-card" id="cardHeader"></div>
+      <div class="panel panel-full">
+        <div class="panel-title" id="defTitle">Definition & Objective</div>
+        <div class="panel-body" id="defText"></div>
+      </div>
+      <div class="grid-panels">
+        <div class="panel">
+          <div class="panel-title" id="remedTitle">Remediation & Hardening Implementation</div>
+          <div class="panel-body" id="remedText"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title" id="testTitle">Implementation Testing & Audit Checklist</div>
+          <div class="panel-body" id="testChecklist"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ISO/IEC 27001:2022 Dataset
+    const isoData = [
+      ["A.5.1", "Policies for information security", "Organizational", "Policies for information security and topic-specific policies shall be defined, approved by management, published, communicated to and acknowledged by relevant personnel and interested parties, and reviewed at planned intervals.", "Draft topic-specific policies (access control, cryptography, remote working). Secure leadership approval. Publish centrally via ISMS portal and mandate employee sign-off.", ["Verify documented policies exist and are signed off by management.", "Sample acknowledgment records across different departments.", "Confirm annual policy review logs or triggers on significant organizational change."]],
+      ["A.5.7", "Threat intelligence", "Organizational", "Information relating to information security threats shall be collected and analyzed to produce threat intelligence.", "Ingest structured threat feeds (STIX/TAXII, commercial intelligence). Integrate threat feeds with SIEM/EDR to identify emerging adversary tactics and IoCs.", ["Review documented threat intelligence analysis procedure.", "Verify integration of threat indicators into detection pipelines.", "Sample threat intelligence briefings delivered to technical teams."]],
+      ["A.5.15", "Access control", "Organizational", "Rules to control physical and logical access to information and other associated assets shall be established and implemented based on business and security requirements.", "Establish Role-Based Access Control (RBAC), enforce least privilege, implement automated joiner/mover/leaver workflows, and conduct periodic entitlement reviews.", ["Inspect formal access control policy documentation.", "Sample 20 user access profiles to verify alignment with job roles.", "Review quarterly access re-certification sign-off logs from managers."]],
+      ["A.5.23", "Information security for use of cloud services", "Organizational", "Processes for the acquisition, use, management and exit from cloud services shall be established in accordance with the organization's information security requirements.", "Formulate Cloud Governance standards, enforce Cloud Security Posture Management (CSPM), map shared responsibility models, and draft cloud exit/transition strategies.", ["Review Cloud Security Baseline configurations against CIS Benchmarks.", "Verify CSPM alert remediation metrics and policy compliance.", "Inspect documented cloud exit and data export procedures."]],
+      ["A.6.3", "Information security awareness, education and training", "People", "Personnel of the organization and relevant interested parties shall receive appropriate information security awareness, education and training and regular updates.", "Mandate onboarding security training, quarterly refresher modules, role-specific secure coding training for devs, and regular phishing simulations.", ["Verify 100% completion rates for annual mandatory security training.", "Inspect phishing simulation failure metrics and subsequent remediation training.", "Review specialized training curricula for developers and system administrators."]],
+      ["A.7.4", "Physical security monitoring", "Physical", "Premises shall be continuously monitored for unauthorized physical access.", "Deploy 24/7 CCTV surveillance at entry/exit points and server rooms. Integrate motion sensors and physical alarm monitoring systems.", ["Inspect camera coverage across key entry points, server rooms, and exits.", "Verify CCTV video recording retention meets policy (e.g., minimum 30-90 days).", "Test physical alarm response procedures and central station monitoring."]],
+      ["A.7.7", "Clear desk and clear screen", "Physical", "Clear desk rules for papers and removable storage media and clear screen rules for information processing facilities shall be defined and appropriately applied.", "Enforce GPO/MDM auto-lock after 5 minutes of inactivity. Provide lockable filing cabinets and locked shredding bins.", ["Conduct unannounced after-hours walkthrough audits of office desks.", "Verify automated screen lock timeout configuration via active MDM profiles.", "Inspect availability and usage of locked paper shredding consoles."]],
+      ["A.8.9", "Configuration management", "Technological", "Configurations, including security configurations, of hardware, software, services and networks shall be established, documented, implemented, monitored and reviewed.", "Harden systems using CIS Benchmarks. Manage configurations through Infrastructure-as-Code (Terraform, Ansible), and trigger automated drift alerts.", ["Compare production server settings against CIS hardened baseline images.", "Verify that direct production configuration edits are blocked in favor of IaC.", "Review configuration drift detection alerts over the preceding quarter."]],
+      ["A.8.12", "Data leakage prevention", "Technological", "Data leakage prevention measures shall be applied to systems, networks and any other devices that process, store or transmit sensitive information.", "Deploy endpoint and network DLP agents. Block exfiltration of sensitive strings (regex for SSNs/credit cards) to personal USBs, webmail, and public cloud drives.", ["Test DLP policy triggers by simulating outbound transmission of test synthetic PII.", "Inspect DLP alert consoles for unresolved exfiltration incidents.", "Verify endpoint DLP policy blocking unapproved cloud storage services."]],
+      ["A.8.16", "Monitoring activities", "Technological", "Networks, systems and applications shall be monitored for anomalous behavior and appropriate actions taken to evaluate potential information security incidents.", "Deploy SIEM/SOAR correlation rules, User and Entity Behavior Analytics (UEBA), and network anomaly detection. Ensure 24/7 alert monitoring.", ["Review active SIEM detection rules for coverage of common attack techniques.", "Verify alert notification escalation paths to on-call engineers.", "Sample recent security alert tickets to verify investigation within SLA."]],
+      ["A.8.24", "Use of cryptography", "Technological", "Rules for the effective use of cryptography, including cryptographic key management, shall be defined and implemented.", "Enforce TLS 1.3 for data in transit and AES-256 for data at rest. Implement secure key management (KMS/HSM), key rotation, and deprecate weak ciphers (DES, SHA1).", ["Scan external endpoints with SSL/TLS analyzer to ensure deprecation of TLS 1.0/1.1.", "Inspect cloud storage bucket settings to verify default encryption with customer KMS.", "Review KMS key rotation policies and access policy grants."]],
+      ["A.8.28", "Secure coding", "Technological", "Secure coding principles shall be applied to software development.", "Provide developers with secure coding guidelines. Enforce parameterization against SQLi, contextual encoding against XSS, and ban unsafe memory functions.", ["Review developer secure coding standards documentation.", "Sample static code analysis logs to verify automated detection of code flaws.", "Check peer review records to confirm security aspects are verified before merge."]]
+    ];
+
+    // NIST SP 800-53 Rev. 5 Core Controls Dataset
+    const nistData = [
+      ["AC-2", "Account Management", "Access Control (AC)", "Manage information system accounts: identify account types, assign account managers, establish conditions for group/role membership, specify authorized users, specify access authorizations, and require approval for requests.", "Implement automated identity provisioning via Okta/Entra ID linked to HRIS. Mandate manager approval workflows for role assignment. Enforce automated deactivation upon termination and review accounts semi-annually.", ["EXAMINE: Account management policy, system security plan (SSP), and account request tickets.", "INTERVIEW: Account managers, system administrators, and HR representatives.", "TEST: Test automated deprovisioning by verifying immediate account disablement upon HR status change (<24 hrs)."]],
+      ["AC-3", "Access Enforcement", "Access Control (AC)", "Enforce approved authorizations for logical access to information and system resources in accordance with applicable access control policies.", "Configure discretionary access control (DAC), role-based access control (RBAC), and attribute-based access control (ABAC). Enforce access permissions at OS, database, and application levels via security kernels.", ["EXAMINE: Access control configurations, file system ACLs, and database grant tables.", "INTERVIEW: Information system administrators and database administrators.", "TEST: Attempt unauthorized access to restricted directories using a low-privilege test account."]],
+      ["AU-2", "Event Logging", "Audit & Accountability (AU)", "Identify the types of events that the system is capable of logging in support of the audit function, and coordinate logging with other organizational entities.", "Configure audit policy to log successful/unsuccessful authentications, privilege escalations, file modifications to sensitive shares, policy changes, and system shutdowns.", ["EXAMINE: Documented list of auditable events and audit configuration settings.", "INTERVIEW: Security operations center (SOC) personnel and system engineers.", "TEST: Generate audited event (e.g., failed logon) and verify event record creation in central syslog/SIEM."]],
+      ["AU-6", "Audit Record Review, Analysis, and Reporting", "Audit & Accountability (AU)", "Review and analyze information system audit records for indications of unusual or suspicious activity and report findings to designated personnel.", "Deploy centralized SIEM (Splunk, Sentinel) with behavioral detection rules, automated alerts for brute-force attempts and anomalous logins, and weekly security report summaries.", ["EXAMINE: SIEM correlation rules, weekly audit review reports, and alert notification tickets.", "INTERVIEW: Incident responders and SOC lead analysts.", "TEST: Inject test anomalous traffic and verify alert triggering and analyst dispatch within SLA."]],
+      ["CM-2", "Baseline Configuration", "Configuration Management (CM)", "Develop, document, and maintain under configuration control, a current baseline configuration of the information system.", "Establish hardened OS baseline templates based on CIS Benchmarks or DISA STIGs. Deploy configurations via automated configuration management (Ansible, Puppet, Terraform).", ["EXAMINE: Documented baseline configurations, STIG checklists, and golden image templates.", "INTERVIEW: Configuration management leads and systems engineering team.", "TEST: Scan live systems with configuration compliance tools (e.g., Nessus/OpenSCAP) against baseline STIGs."]],
+      ["CM-8", "Information System Component Inventory", "Configuration Management (CM)", "Develop and document an inventory of information system components that accurately reflects the system and is maintained using automated tools.", "Deploy active network discovery scanners and endpoint management agents. Reconcile asset inventory automatically with CMDB and cloud resource registries.", ["EXAMINE: Hardware and software inventory records and asset management procedures.", "INTERVIEW: Asset management custodians and network engineers.", "TEST: Compare automated network IP scan results against official CMDB inventory for unrecorded rogue devices."]],
+      ["IA-2", "Identification and Authentication (Organizational Users)", "Identification & Auth (IA)", "Uniquely identify and authenticate organizational users (or processes acting on behalf of organizational users).", "Mandate phishing-resistant Multi-Factor Authentication (FIDO2 WebAuthn or PIV/CAC smart cards) for all interactive logins to network and cloud environments.", ["EXAMINE: IAM configuration policies and MFA requirement enforcement settings.", "INTERVIEW: Identity administrators and system users.", "TEST: Attempt interactive logon to administrative console using only single-factor username/password."]],
+      ["IR-4", "Incident Handling", "Incident Response (IR)", "Implement an incident handling capability for security incidents that includes preparation, detection and analysis, containment, eradication, and recovery.", "Develop and maintain operational Incident Response Playbooks (ransomware, unauthorized access, data spill). Equip CSIRT with dedicated forensic workstations and ticketing systems.", ["EXAMINE: Incident Response Plan (IRP), forensic playbooks, and past post-incident reports.", "INTERVIEW: Incident response team members and designated on-call leads.", "TEST: Conduct annual tabletop simulation exercise and review escalation timing and triage actions."]],
+      ["RA-5", "Vulnerability Monitoring and Scanning", "Risk Assessment (RA)", "Monitor for vulnerabilities in the system and hosted applications; scan for vulnerabilities periodically and when new vulnerabilities affecting the system are identified.", "Perform weekly authenticated vulnerability scans across all endpoints, servers, and network devices. Enforce remediation within 15 days for Critical, 30 days for High CVEs.", ["EXAMINE: Vulnerability scanning policy, scanning tool configurations, and POA&M tickets.", "INTERVIEW: Vulnerability management analysts and system patching teams.", "TEST: Inspect latest authenticated vulnerability scan reports and verify remediation timestamps against policy SLA."]],
+      ["SC-7", "Boundary Protection", "System & Comms (SC)", "Monitor and control communications at external boundaries of the system and key internal boundaries.", "Deploy Next-Generation Firewalls (NGFW) at network perimeter, configure DMZ subnets, implement micro-segmentation, and deny all inbound/outbound traffic by default.", ["EXAMINE: Network architecture topology diagrams, firewall rule bases, and DMZ configurations.", "INTERVIEW: Network security architects and firewall administrators.", "TEST: Perform port scan from external untrusted network to verify default-deny ingress posture."]],
+      ["SC-8", "Transmission Confidentiality and Integrity", "System & Comms (SC)", "Protect the confidentiality and integrity of transmitted information.", "Enforce TLS 1.3 encryption with forward secrecy for web/API endpoints. Enforce IPsec VPN tunnels for site-to-site communication, disabling insecure legacy protocols.", ["EXAMINE: Cryptographic transport policy, cipher suite configuration files, and VPN configs.", "INTERVIEW: System architects and web application administrators.", "TEST: Capture network traffic across internal boundary with Wireshark to verify payload encryption."]],
+      ["SC-13", "Cryptographic Protection", "System & Comms (SC)", "Implement cryptographic modules in accordance with applicable federal laws, policies, and FIPS standards.", "Enforce FIPS 140-2/3 validated cryptographic modules for all encryption at rest and in transit. Mandate AES-256 and SHA-256/384 minimum algorithms.", ["EXAMINE: FIPS 140 cryptographic module validation certificates and KMS configuration.", "INTERVIEW: Cryptographic key custodians and security architects.", "TEST: Run cryptographic inspection tool on servers to ensure non-FIPS compliant ciphers are disabled."]],
+      ["SI-2", "Flaw Remediation", "System Integrity (SI)", "Identify, report, and correct information system flaws (patches); test software updates before installation; install security-relevant updates within defined timeframes.", "Deploy automated patch management (WSUS, Intune, Automox). Test patches in staging environment before pushing to production. Enforce 30-day critical patch cycles.", ["EXAMINE: Patch management procedures, staging test logs, and patch deployment records.", "INTERVIEW: Patching administrators and operational systems staff.", "TEST: Query sample of production systems for installed KB updates against vendor critical security bulletins."]],
+      ["SI-4", "Information System Monitoring", "System Integrity (SI)", "Monitor the system to detect attacks and indicators of potential compromise, and unauthorized connections to the system.", "Deploy EDR agents with behavioral heuristics across all endpoints. Monitor network taps via Network Detection and Response (NDR) and forward alerts to 24/7 SOC.", ["EXAMINE: Monitoring strategy document, sensor deployment architecture, and SIEM dashboards.", "INTERVIEW: SOC monitoring analysts and intrusion detection engineers.", "TEST: Execute benign adversary emulation behavior (e.g., Atomic Red Team) and verify telemetry alert capture."]],
+      ["SR-3", "Supply Chain Controls and Processes", "Supply Chain Risk (SR)", "Establish a supply chain risk management plan; assess and mitigate risks associated with suppliers and system components.", "Require vendor security assessments, third-party SOC reports, and Software Bill of Materials (SBOM) for critical application components. Vet hardware origin.", ["EXAMINE: Supply Chain Risk Management (SCRM) plan, vendor risk assessments, and SBOM records.", "INTERVIEW: Procurement officers, vendor managers, and supply chain security analysts.", "TEST: Review sample of incoming software components against open-source vulnerability databases (OSV)."]]
+    ];
+
+    let currentFramework = "ISO";
+    let activeCategory = "All";
+    let selectedId = "A.5.15";
+
+    function switchFramework(fw) {
+      currentFramework = fw;
+      document.querySelectorAll(".framework-btn").forEach(b => {
+        b.classList.remove("active");
+        if ((fw === "ISO" && b.classList.contains("iso")) || (fw === "NIST" && b.classList.contains("nist"))) {
+          b.classList.add("active");
+        }
+      });
+      activeCategory = "All";
+      renderFilters();
+      applyFilters();
+      const currentList = getActiveDataset();
+      if (currentList.length > 0) selectControl(currentList[0][0]);
+    }
+
+    function getActiveDataset() {
+      return currentFramework === "ISO" ? isoData : nistData;
+    }
+
+    function renderFilters() {
+      const bar = document.getElementById("filterBar");
+      bar.innerHTML = "";
+      let categories = ["All"];
+      if (currentFramework === "ISO") {
+        categories = ["All", "Organizational", "People", "Physical", "Technological"];
+      } else {
+        categories = ["All", "Access Control (AC)", "Audit & Accountability (AU)", "Configuration Management (CM)", "Identification & Auth (IA)", "Incident Response (IR)", "System & Comms (SC)", "System Integrity (SI)"];
+      }
+
+      categories.forEach(cat => {
+        const btn = document.createElement("button");
+        btn.className = `pill ${cat === activeCategory ? 'active' : ''}`;
+        btn.innerText = cat.includes("(") ? cat.split(" ")[0] : cat;
+        btn.onclick = () => {
+          activeCategory = cat;
+          renderFilters();
+          applyFilters();
+        };
+        bar.appendChild(btn);
+      });
+    }
+
+    function applyFilters() {
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      const data = getActiveDataset();
+      const listEl = document.getElementById("controlList");
+      listEl.innerHTML = "";
+
+      const filtered = data.filter(([id, name, cat, def]) => {
+        const matchesCat = activeCategory === "All" || cat === activeCategory;
+        const matchesQuery = id.toLowerCase().includes(q) || name.toLowerCase().includes(q) || def.toLowerCase().includes(q);
+        return matchesCat && matchesQuery;
+      });
+
+      filtered.forEach(([id, name, cat]) => {
+        const div = document.createElement("div");
+        div.className = `control-row ${id === selectedId ? 'selected' : ''} ${currentFramework === 'NIST' ? 'nist' : ''}`;
+        div.onclick = () => selectControl(id);
+        div.innerHTML = `
+          <div class="row-meta">
+            <span class="row-id ${currentFramework === 'NIST' ? 'nist' : ''}">${id}</span>
+            <span class="badge">${cat.split(" ")[0]}</span>
+          </div>
+          <div class="row-name">${name}</div>
+        `;
+        listEl.appendChild(div);
+      });
+
+      if (filtered.length > 0 && !filtered.find(c => c[0] === selectedId)) {
+        selectControl(filtered[0][0]);
+      }
+    }
+
+    function selectControl(id) {
+      selectedId = id;
+      const data = getActiveDataset();
+      const item = data.find(c => c[0] === id);
+      if (!item) return;
+
+      const [cId, name, cat, def, remed, tests] = item;
+      const isNist = currentFramework === "NIST";
+      const fwTag = isNist ? "NIST SP 800-53 Rev. 5 Control" : "ISO/IEC 27001:2022 Annex A Control";
+      const tagColor = isNist ? "var(--accent-nist)" : "var(--accent-iso)";
+
+      document.getElementById("cardHeader").innerHTML = `
+        <span class="fw-tag" style="color: ${tagColor}">${fwTag} &bull; ${cat}</span>
+        <h2>${cId} &ndash; ${name}</h2>
+      `;
+
+      document.getElementById("defTitle").className = `panel-title ${isNist ? 'nist' : 'iso'}`;
+      document.getElementById("remedTitle").className = `panel-title ${isNist ? 'nist' : 'iso'}`;
+      document.getElementById("testTitle").className = `panel-title ${isNist ? 'nist' : 'iso'}`;
+
+      document.getElementById("defText").innerText = def;
+      document.getElementById("remedText").innerText = remed;
+
+      const testContainer = document.getElementById("testChecklist");
+      testContainer.innerHTML = "";
+      tests.forEach((t, i) => {
+        const check = document.createElement("div");
+        check.className = "check-item";
+        let displayHtml = t;
+        if (t.includes(":")) {
+          const parts = t.split(":");
+          displayHtml = `<span class="method-tag">${parts[0]}</span> ${parts.slice(1).join(":")}`;
+        }
+        check.innerHTML = `
+          <input type="checkbox" id="chk_${cId}_${i}">
+          <label for="chk_${cId}_${i}">${displayHtml}</label>
+        `;
+        testContainer.appendChild(check);
+      });
+
+      // Update sidebar visual selection
+      document.querySelectorAll(".control-row").forEach(r => {
+        const rId = r.querySelector(".row-id").innerText;
+        r.classList.toggle("selected", rId === id);
+      });
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+
+    // Initial setup
+    renderFilters();
+    switchFramework("ISO");
+  </script>
+</body>
+</html>
